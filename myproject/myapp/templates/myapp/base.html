@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>
+    {% block title %}
+      Base Title
+    {% endblock %}
+  </title>
+</head>
+<body>
+<div id="buttons-container">
+  <a href="{% url 'orders-list' %}">Список заказов</a>
+  <a href="{% url 'home-page' %}">Список продуктов</a>
+</div>
+
+{% block body %}
+  Base body
+{% endblock %}
+
+</body>
+</html>

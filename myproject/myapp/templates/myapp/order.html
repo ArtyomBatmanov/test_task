@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Детали заказа</title>
+</head>
+<body>
+    <h1>Детали заказа</h1>
+    <p>ID заказа: {{ order.id }}</p>
+    <p>Налог: {{ order.tax }} % </p>
+    <p>Скидка: {{ order.discount }} % </p>
+    <p>Товары:</p>
+    <ul>
+        {% for item in order.items.all %}
+            <li>{{ item.name }} - {{ item.price }} {{ item.currency }}</li>
+        {% endfor %}
+    <p>Итоговая сумма с учётом скидки и налога будет рассчитана на странице оплаты</p>
+    </ul>
+
+    <button id="payButton">Оплатить сейчас</button>
+
+    <script src="https://js.stripe.com/v3/"></script>
+    <script>
+        let stripe = Stripe("{{ STRIPE_PUBLIC_KEY }}");
+
+        document.getElementById('payButton').addEventListener('click', function() {
+            // Отправляем запрос на создание платежной сессии
+            fetch('/myapp/payment/{{ order.id }}/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                // body: JSON.stringify({})  # если нужно отправить какие-то данные вместе с запросом
+            })
+                .then(response => response.json())
+                .then(session => {
+                    // Инициируем процесс оплаты через Stripe Checkout
+                    return stripe.redirectToCheckout({ sessionId: session.session_id });
+                })
+                .then(result => {
+                    if (result.error) {
+                        // Обработка ошибки, например, вывод на экран сообщения об ошибке
+                        alert(result.error.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        });
+    </script>
+</body>
+</html>
